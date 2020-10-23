@@ -46,8 +46,17 @@ def _save_to_file_as_json(data, file_path):
         file.write(json.dumps(data, sort_keys=False, indent=4))
 
 
-conversation = _fetch(url="https://slack.com/api/users.conversations", desired_key="channels", types="im,mpim")
-_save_to_file_as_json(data=conversation, file_path="./output/conversation.json")
+conversations = _fetch(url="https://slack.com/api/users.conversations", desired_key="channels", types="im,mpim")
+_save_to_file_as_json(data=conversations, file_path="./output/conversation.json")
+
+for conversation in conversations:
+    channel_data = _fetch(url="https://slack.com/api/conversations.history", desired_key="messages", channel=conversation.get('id'))
+
+    # Conversations with more than two participants have a normalized string name in the same
+    # of regular one on one direct messages they do not have this field so we tag them
+    # with the id of the conversation
+    name = conversation.get('name_normalized') if "name_normalized" in conversation else conversation.get('id')
+    _save_to_file_as_json(data=channel_data, file_path=f"./output/conversations/{name}.json")
 
 channels = _fetch(url="https://slack.com/api/conversations.list", desired_key="channels", types="public_channel,private_channel")
 _save_to_file_as_json(data=channels, file_path="./output/channels.json")
