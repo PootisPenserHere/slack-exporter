@@ -34,7 +34,7 @@ def _fetch(url: str, desired_key: str, next_cursor: str = None, **kwargs) -> lis
     return output.get(desired_key)
 
 
-def _save_to_file(data, file_path):
+def _save_to_file_as_json(data, file_path):
     if not os.path.exists(os.path.dirname(file_path)):
         try:
             os.makedirs(os.path.dirname(file_path))
@@ -46,9 +46,12 @@ def _save_to_file(data, file_path):
         file.write(json.dumps(data, sort_keys=False, indent=4))
 
 
+conversation = _fetch(url="https://slack.com/api/users.conversations", desired_key="channels", types="im,mpim")
+_save_to_file_as_json(data=conversation, file_path="./output/conversation.json")
+
 channels = _fetch(url="https://slack.com/api/conversations.list", desired_key="channels", types="public_channel,private_channel")
-_save_to_file(data=channels, file_path="./output/channels.json")
+_save_to_file_as_json(data=channels, file_path="./output/channels.json")
 
 for channel in channels:
     channel_data = _fetch(url="https://slack.com/api/conversations.history", desired_key="messages", channel=channel.get('id'))
-    _save_to_file(data=channel_data, file_path=f"./output/channels/{channel.get('name_normalized')}.json")
+    _save_to_file_as_json(data=channel_data, file_path=f"./output/channels/{channel.get('name_normalized')}.json")
