@@ -1,5 +1,8 @@
+import json
+import os
+import requests
+import time
 from dotenv import load_dotenv
-import requests, os, json
 
 load_dotenv(".env")
 
@@ -16,6 +19,9 @@ def _fetch(url: str, next_cursor: str = None) -> list:
     raw_output = requests.get(url=url, params=params)
     output = raw_output.json()
 
+    # Sleep to avoid hitting the api rate limit
+    time.sleep(1)
+
     new_cursor = output['response_metadata']['next_cursor']
     if new_cursor:
         return output.get('channels') + _fetch(url, new_cursor)
@@ -23,6 +29,10 @@ def _fetch(url: str, next_cursor: str = None) -> list:
     return output.get('channels')
 
 
+def _save_to_file(data, file_path):
+    with open(file_path, 'w') as file:
+        file.write(json.dumps(data, sort_keys=False, indent=4))
+
+
 channels = _fetch(url="https://slack.com/api/conversations.list")
-with open("./output/channels.json", 'w') as channels_file:
-    channels_file.write(json.dumps(channels, sort_keys=False, indent=4))
+_save_to_file(data=channels, file_path="./output/channels.json")
