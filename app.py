@@ -51,20 +51,20 @@ users = _fetch(url="https://slack.com/api/users.list", desired_key="members")
 _save_to_file_as_json(data=users, file_path="./output/users.json")
 
 for user in users:
-    channel_data = _fetch(url="https://slack.com/api/users.info", user=user.get('id'))
-    _save_to_file_as_json(data=channel_data, file_path=f"./output/users/{user.get('id')}.json")
+    user_data = _fetch(url="https://slack.com/api/users.info", user=user.get('id'))
+    _save_to_file_as_json(data=user_data, file_path=f"./output/users/{user.get('id')}.json")
 
 conversations = _fetch(url="https://slack.com/api/users.conversations", desired_key="channels", types="im,mpim")
 _save_to_file_as_json(data=conversations, file_path="./output/conversation.json")
 
 for conversation in conversations:
-    channel_data = _fetch(url="https://slack.com/api/conversations.history", desired_key="messages", channel=conversation.get('id'))
+    conversation_data = _fetch(url="https://slack.com/api/conversations.history", desired_key="messages", channel=conversation.get('id'))
 
     # Conversations with more than two participants have a normalized string name in the same
     # of regular one on one direct messages they do not have this field so we tag them
     # with the id of the conversation
     name = conversation.get('name_normalized') if "name_normalized" in conversation else conversation.get('id')
-    _save_to_file_as_json(data=channel_data, file_path=f"./output/conversations/{name}.json")
+    _save_to_file_as_json(data=conversation_data, file_path=f"./output/conversations/{name}.json")
 
 channels = _fetch(url="https://slack.com/api/conversations.list", desired_key="channels", types="public_channel,private_channel")
 _save_to_file_as_json(data=channels, file_path="./output/channels.json")
