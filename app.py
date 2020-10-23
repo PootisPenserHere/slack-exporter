@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv(".env")
 
 
-def _fetch(url: str, desired_key: str, next_cursor: str = None, **kwargs) -> list:
+def _fetch(url: str, desired_key: str = None, next_cursor: str = None, **kwargs) -> list:
     params = {
         "token": os.getenv('SLACK_TOKEN'),
     }
@@ -28,10 +28,11 @@ def _fetch(url: str, desired_key: str, next_cursor: str = None, **kwargs) -> lis
     # send while other endpoints like conversations.list show it as an empty string
     new_cursor = output['response_metadata']['next_cursor'] if "response_metadata" in output else None
 
-    if new_cursor:
-        return output.get(desired_key) + _fetch(url, desired_key, new_cursor, **kwargs)
+    results = output.get(desired_key) if desired_key else output
+    if new_cursor and desired_key:
+        return results + _fetch(url, desired_key, new_cursor, **kwargs)
 
-    return output.get(desired_key)
+    return results
 
 
 def _save_to_file_as_json(data, file_path):
@@ -45,6 +46,13 @@ def _save_to_file_as_json(data, file_path):
     with open(file_path, 'w') as file:
         file.write(json.dumps(data, sort_keys=False, indent=4))
 
+
+users = _fetch(url="https://slack.com/api/users.list", desired_key="members")
+_save_to_file_as_json(data=users, file_path="./output/users.json")
+
+for user in users:
+    channel_data = _fetch(url="https://slack.com/api/users.info", user=user.get('id'))
+    _save_to_file_as_json(data=channel_data, file_path=f"./output/users/{user.get('id')}.json")
 
 conversations = _fetch(url="https://slack.com/api/users.conversations", desired_key="channels", types="im,mpim")
 _save_to_file_as_json(data=conversations, file_path="./output/conversation.json")
