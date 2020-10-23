@@ -47,6 +47,9 @@ def _save_to_file_as_json(data, file_path):
         file.write(json.dumps(data, sort_keys=False, indent=4))
 
 
+emojis = _fetch(url="https://slack.com/api/emoji.list", desired_key="emoji")
+_save_to_file_as_json(data=emojis, file_path="./output/emojis.json")
+
 users = _fetch(url="https://slack.com/api/users.list", desired_key="members")
 _save_to_file_as_json(data=users, file_path="./output/users.json")
 
