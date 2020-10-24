@@ -85,3 +85,8 @@ output
 
 ```
 
+## TODOs
+
+* Download share media
+* Import to an open source service like [mattermost](https://github.com/mattermost/mattermost-server)
+
